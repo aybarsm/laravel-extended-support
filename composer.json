@@ -1,0 +1,46 @@
+{
+    "name": "aybarsm/laravel-extended-support",
+    "description": "Additional mixins for Laravel Macroable Facades and helpers",
+    "type": "library",
+    "keywords": [
+        "aybarsm",
+        "laravel",
+        "support",
+        "helpers",
+        "mixins",
+        "macros",
+        "extended"
+    ],
+    "homepage": "https://github.com/aybarsm/laravel-extended-support",
+    "authors": [
+        {
+            "name": "aybarsm",
+            "email": "hello@aybarsm.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^10.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.8",
+        "pestphp/pest": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aybarsm\\Laravel\\Support\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aybarsm\\Laravel\\Support\\ExtendedSupportServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
