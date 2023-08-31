@@ -2,6 +2,7 @@
     "name": "aybarsm/laravel-extended-support",
     "description": "Additional mixins for Laravel Macroable Facades and helpers",
     "type": "library",
+    "license": "MIT",
     "keywords": [
         "aybarsm",
         "laravel",
