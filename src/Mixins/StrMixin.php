@@ -3,10 +3,9 @@
 namespace Aybarsm\Laravel\Support\Mixins;
 
 use Illuminate\Support\Str;
-class MixinStr
+/** @mixin \Illuminate\Support\Str */
+class StrMixin
 {
-    const BIND = \Illuminate\Support\Str::class;
-
     public static function cleanWhitespace(): \Closure
     {
         return fn (string $str): string => preg_replace('/\s+/', ' ', $str);
@@ -29,25 +28,30 @@ class MixinStr
 
     public static function pathDir(): \Closure
     {
-        return fn(string $path, bool $final = false): string => DIRECTORY_SEPARATOR . trim($path, DIRECTORY_SEPARATOR) . ($final ? DIRECTORY_SEPARATOR : '');
+        return fn (string $path, bool $trailingSlash = false): string => DIRECTORY_SEPARATOR.trim($path, DIRECTORY_SEPARATOR).($trailingSlash ? DIRECTORY_SEPARATOR : '');
     }
 
     public static function spread(): \Closure
     {
-        return function(string $source, string $target, bool $leftOver = true): string
-        {
-            if (! $source || ! $target || ! Str::length($source) || ! Str::length($target)) return $target;
+        return function (string $source, string $target, bool $leftOver = true): string {
+            if (! $source || ! $target || ! Str::length($source) || ! Str::length($target)) {
+                return $target;
+            }
 
             $lenSource = Str::length($source);
             $lenTarget = Str::length($target);
             $rtr = '';
 
-            for($i=1; $i <= $lenSource; $i++){
-                $rtr .= Str::substr($target, $i-1, 1) . Str::substr($source, $i-1, 1);
+            for ($i = 1; $i <= $lenSource; $i++) {
+                $rtr .= Str::substr($target, $i - 1, 1).Str::substr($source, $i - 1, 1);
 
-                if ($i == $lenTarget || $i == $lenSource){
-                    if ($leftOver && $i < $lenSource) $rtr .= Str::substr($source, $i, $lenSource);
-                    if ($leftOver && $i < $lenTarget) $rtr .= Str::substr($target, $i, $lenTarget);
+                if ($i == $lenTarget || $i == $lenSource) {
+                    if ($leftOver && $i < $lenSource) {
+                        $rtr .= Str::substr($source, $i, $lenSource);
+                    }
+                    if ($leftOver && $i < $lenTarget) {
+                        $rtr .= Str::substr($target, $i, $lenTarget);
+                    }
                     break;
                 }
             }

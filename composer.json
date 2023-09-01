@@ -39,8 +39,14 @@
         "laravel": {
             "providers": [
                 "Aybarsm\\Laravel\\Support\\ExtendedSupportServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "ExtendedSupport": "Aybarsm\\Laravel\\Support\\Facades\\ExtendedSupport"
+            }
         }
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true

@@ -2,11 +2,14 @@
 
 return [
     'mixins' => [
+        'replace' => true,
         'load' => [
-            Aybarsm\Laravel\Support\Mixins\MixinStr::class,
-            Aybarsm\Laravel\Support\Mixins\MixinArr::class,
-            Aybarsm\Laravel\Support\Mixins\MixinFile::class,
-            Aybarsm\Laravel\Support\Mixins\MixinRule::class,
-        ]
-    ]
+            Aybarsm\Laravel\Support\Mixins\StrMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
+            Aybarsm\Laravel\Support\Mixins\FileMixin::class,
+            Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
+            Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
+        ],
+    ],
 ];
