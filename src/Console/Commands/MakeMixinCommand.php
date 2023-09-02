@@ -4,12 +4,14 @@ namespace Aybarsm\Laravel\Support\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\GeneratorCommand;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\select;
+use function Laravel\Prompts\suggest;
 
 #[AsCommand(name: 'make:mixin')]
 class MakeMixinCommand extends GeneratorCommand
@@ -66,16 +68,23 @@ class MakeMixinCommand extends GeneratorCommand
 
     protected function buildClass($name): string
     {
-        $bind = select(
+        $macroables = App::getMacroables();
+
+        $bind = suggest(
             label: 'Which macroable class would you like to use this mixin to bind?',
-            options: $macroables = App::getMacroables(),
-            scroll: count($macroables),
+            options: fn (string $search) => strlen($search) > 0
+                ? Arr::where($macroables, function ($val, $key) use ($search) {
+                    return Str::contains($val, $search, true);
+                }) : $macroables,
+            placeholder: 'E.g. Array',
+            required: true,
+            validate: fn (string $class) => class_exists($class) ? null : "Class [{$class}] does not exist."
         );
 
         $stub = Command::stubNormalise($this->getStub());
         $stub = $this->replaceNamespace($stub, $name)->replaceClass($stub, $name);
 
-        return str_replace('{{ bind_class }}', "\\{$macroables[$bind]}::class", $stub);
+        return str_replace('{{ bind_class }}', Str::wrapSafe(rtrim(trim($bind), '::class'), '\\', ''), $stub);
     }
 
     protected function getStub(): string

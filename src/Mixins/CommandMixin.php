@@ -4,6 +4,7 @@ namespace Aybarsm\Laravel\Support\Mixins;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+
 /** @mixin \Illuminate\Console\Command */
 class CommandMixin
 {

@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 /** @mixin \Illuminate\Support\Arr */
 class ArrMixin
 {
-
     public static function toObject(): \Closure
     {
         return fn (array|object $arr, int $flags = JSON_NUMERIC_CHECK | JSON_FORCE_OBJECT): object => json_decode(json_encode($arr, $flags));

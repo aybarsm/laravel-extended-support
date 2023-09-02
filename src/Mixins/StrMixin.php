@@ -2,7 +2,9 @@
 
 namespace Aybarsm\Laravel\Support\Mixins;
 
+use Aybarsm\Laravel\Support\Supplements\Str\SemVer;
 use Illuminate\Support\Str;
+
 /** @mixin \Illuminate\Support\Str */
 class StrMixin
 {
@@ -11,9 +13,14 @@ class StrMixin
         return fn (string $str): string => preg_replace('/\s+/', ' ', $str);
     }
 
+    public static function replaceLines(): \Closure
+    {
+        return fn (string $str, string|float|int $replace): string => preg_replace("/((\r?\n)|(\r\n?))/", $replace, $str);
+    }
+
     public static function normaliseLines(): \Closure
     {
-        return fn (string $str): string => preg_replace("/((\r?\n)|(\r\n?))/", "\n", $str);
+        return fn (string $str): string => static::replaceLines($str, "\n");
     }
 
     public static function removeEmptyLines(): \Closure
@@ -57,6 +64,26 @@ class StrMixin
             }
 
             return $rtr;
+        };
+    }
+
+    public static function semVer(): \Closure
+    {
+        return fn (string $ver): SemVer => new SemVer($ver);
+    }
+
+    public static function isSemVer(): \Closure
+    {
+        return fn (string $semVer): bool => SemVer::validate($semVer);
+    }
+
+    public static function wrapSafe(): \Closure
+    {
+        return function (string $value, string $before, string $after = null): string {
+            $before = ! empty($before) && Str::startsWith($value, $before) ? '' : $before;
+            $after = ! empty($after) && Str::endsWith($value, $after) ? '' : $after;
+
+            return ($before === '' && $after === '') ? $value : Str::wrap($value, $before, $after);
         };
     }
 }
