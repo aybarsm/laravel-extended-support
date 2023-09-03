@@ -1,7 +1,6 @@
 <?php
 
 use Aybarsm\Laravel\Support\Enums\ProcessReturnType;
-use Aybarsm\Laravel\Support\Facades\ExtendedSupport;
 use Illuminate\Process\ProcessResult;
 use Illuminate\Support\Facades\Process;
 

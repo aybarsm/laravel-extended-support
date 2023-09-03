@@ -22,7 +22,7 @@ class ExtendedSupportServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/mixin.stub' => base_path('stubs/mixin.stub'),
         ], 'stubs');
 
-        $this->app->singleton(ExtendedSupport::class, function ($app) {
+        $this->app->singleton('extended-support', function ($app) {
             return new ExtendedSupport(
                 config('extended-support.mixins.load', []),
                 config('extended-support.mixins.replace', true),
@@ -32,7 +32,7 @@ class ExtendedSupportServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        app(ExtendedSupport::class)->loadMixins();
+        app('extended-support')->loadMixins();
 
         if ($this->app->runningInConsole()) {
             $this->commands([
