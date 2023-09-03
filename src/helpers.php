@@ -3,7 +3,7 @@
 use Aybarsm\Laravel\Support\Enums\ProcessReturnType;
 use Aybarsm\Laravel\Support\Facades\ExtendedSupport;
 use Illuminate\Process\ProcessResult;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Process;
 
 if (! function_exists('senv')) {
     // Safe & base64 decoding env function
@@ -72,19 +72,13 @@ if (! function_exists('vendor_path')) {
 if (! function_exists('process_return')) {
     function process_return(ProcessResult $processResult, ProcessReturnType $returnType): mixed
     {
-        $checkOutput = function (ProcessResult $processResult) {
-            if ($processResult->exitCode() === 0 && empty($processResult->output()) && ! empty($processResult->errorOutput())) {
-
-            }
-        };
-
         return match ($returnType) {
             ProcessReturnType::FAILED => $processResult->failed(),
             ProcessReturnType::EXIT_CODE => $processResult->exitCode(),
-            ProcessReturnType::OUTPUT => ExtendedSupport::processOutput($processResult)->output,
-            ProcessReturnType::ERROR_OUTPUT => ExtendedSupport::processOutput($processResult)->errorOutput,
+            ProcessReturnType::OUTPUT => Process::resultOutput($processResult)->output,
+            ProcessReturnType::ERROR_OUTPUT => Process::resultOutput($processResult)->errorOutput,
             ProcessReturnType::INSTANCE => $processResult,
-            ProcessReturnType::ALL_OUTPUT => ExtendedSupport::processOutput($processResult),
+            ProcessReturnType::ALL_OUTPUT => Process::resultOutput($processResult),
             default => $processResult->successful()
         };
     }

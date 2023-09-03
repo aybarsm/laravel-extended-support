@@ -6,10 +6,10 @@ use Illuminate\Process\ProcessResult;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-/** @mixin \Aybarsm\Laravel\Support\ExtendedSupport */
-class ExtendedSupportMixin
+/** @mixin \Illuminate\Process\Factory */
+class ProcessMixin
 {
-    public static function processOutput(): \Closure
+    public static function resultOutput(): \Closure
     {
         return function (ProcessResult $processResult): object {
             $output = Str::removeEmptyLines($processResult->output());
