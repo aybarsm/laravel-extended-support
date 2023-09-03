@@ -10,6 +10,7 @@ return [
             Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
             Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
             Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ExtendedSupportMixin::class,
         ],
     ],
 ];
