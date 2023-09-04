@@ -10,22 +10,22 @@ class StrMixin
 {
     public static function cleanWhitespace(): \Closure
     {
-        return fn (string $str): string => preg_replace('/\s+/', ' ', $str);
+        return fn (?string $str): string => is_null($str) ? '' : preg_replace('/\s+/', ' ', $str);
     }
 
     public static function replaceLines(): \Closure
     {
-        return fn (string $str, string|float|int $replace): string => preg_replace("/((\r?\n)|(\r\n?))/", $replace, $str);
+        return fn (?string $str, string|float|int $replace): string => is_null($str) ? '' : preg_replace("/((\r?\n)|(\r\n?))/", $replace, $str);
     }
 
     public static function normaliseLines(): \Closure
     {
-        return fn (string $str): string => static::replaceLines($str, "\n");
+        return fn (?string $str): string => is_null($str) ? '' : static::replaceLines($str, "\n");
     }
 
     public static function removeEmptyLines(): \Closure
     {
-        return fn (string $str): string => trim(preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $str), "\n");
+        return fn (?string $str): string => trim(preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $str), "\n");
     }
 
     public static function explodeLines(): \Closure
