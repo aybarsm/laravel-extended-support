@@ -2,22 +2,9 @@
 
 namespace Aybarsm\Laravel\Support\Mixins;
 
-use Aybarsm\Laravel\Support\Supplements\Str\SemVer;
-use Illuminate\Support\Str;
-
 /** @mixin \Illuminate\Support\Str */
 class StrMixin
 {
-    public static function cleanWhitespace(): \Closure
-    {
-        return fn (?string $str): string => is_null($str) ? '' : preg_replace('/\s+/', ' ', $str);
-    }
-
-    public static function replaceLines(): \Closure
-    {
-        return fn (?string $str, string|float|int $replace): string => is_null($str) ? '' : preg_replace("/((\r?\n)|(\r\n?))/", $replace, $str);
-    }
-
     public static function normaliseLines(): \Closure
     {
         return fn (?string $str): string => is_null($str) ? '' : static::replaceLines($str, "\n");
@@ -38,52 +25,37 @@ class StrMixin
         return fn (string $path, bool $trailingSlash = false): string => DIRECTORY_SEPARATOR.trim($path, DIRECTORY_SEPARATOR).($trailingSlash ? DIRECTORY_SEPARATOR : '');
     }
 
-    public static function spread(): \Closure
+    public static function shuffle(): \Closure
     {
-        return function (string $source, string $target, bool $leftOver = true): string {
-            if (! $source || ! $target || ! Str::length($source) || ! Str::length($target)) {
-                return $target;
-            }
-
-            $lenSource = Str::length($source);
-            $lenTarget = Str::length($target);
-            $rtr = '';
-
-            for ($i = 1; $i <= $lenSource; $i++) {
-                $rtr .= Str::substr($target, $i - 1, 1).Str::substr($source, $i - 1, 1);
-
-                if ($i == $lenTarget || $i == $lenSource) {
-                    if ($leftOver && $i < $lenSource) {
-                        $rtr .= Str::substr($source, $i, $lenSource);
-                    }
-                    if ($leftOver && $i < $lenTarget) {
-                        $rtr .= Str::substr($target, $i, $lenTarget);
-                    }
-                    break;
-                }
-            }
-
-            return $rtr;
-        };
+        return fn (string $string): string => str_shuffle($string);
     }
 
     public static function semVer(): \Closure
     {
-        return fn (string $ver): SemVer => new SemVer($ver);
+        return function (string $ver) {
+            $provider = config('extended-support.providers.supplements.str.semver', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+
+            return new $provider($ver);
+        };
     }
 
     public static function isSemVer(): \Closure
     {
-        return fn (string $semVer): bool => SemVer::validate($semVer);
+        return function (string $ver): bool {
+            $provider = config('extended-support.providers.supplements.str.semver', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+
+            return $provider::validate($ver);
+        };
     }
 
     public static function wrapSafe(): \Closure
     {
-        return function (string $value, string $before, string $after = null): string {
-            $before = ! empty($before) && Str::startsWith($value, $before) ? '' : $before;
-            $after = ! empty($after) && Str::endsWith($value, $after) ? '' : $after;
+        return function (string $value, string $before = '', string $after = ''): string {
+            if (empty($before) && empty($after)) {
+                return $value;
+            }
 
-            return ($before === '' && $after === '') ? $value : Str::wrap($value, $before, $after);
+            return str($value)->start($before)->finish($after)->value();
         };
     }
 }

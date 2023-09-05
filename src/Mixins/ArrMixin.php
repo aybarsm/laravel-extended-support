@@ -2,10 +2,6 @@
 
 namespace Aybarsm\Laravel\Support\Mixins;
 
-use Aybarsm\Laravel\Support\Enums\StrTrimSide;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-
 /** @mixin \Illuminate\Support\Arr */
 class ArrMixin
 {
@@ -30,30 +26,8 @@ class ArrMixin
         return static::contains();
     }
 
-    public static function strTrim(): \Closure
+    public static function diff(): \Closure
     {
-        return fn (array $arr, $chars = " \t\n\r\0\x0B", StrTrimSide $side = StrTrimSide::BOTH): array => Arr::map($arr, function ($val, $key) use ($chars, $side) {
-            if (! is_string($val)) {
-                return $val;
-            }
-
-            return $side === StrTrimSide::BOTH ? trim($val, $chars) : ($side === StrTrimSide::LEFT ? ltrim($val, $chars) : rtrim($val, $chars));
-        });
-    }
-
-    public static function strCall(): \Closure
-    {
-        return fn (array $arr, string $method, bool $appendValue = true, ...$args): array => Arr::map($arr, function ($val, $key) use ($method, $appendValue, $args) {
-            if (! is_string($val)) {
-                return $val;
-            }
-
-            match ($appendValue) {
-                false => array_unshift($args, $val),
-                default => $args[] = $val
-            };
-
-            return Str::{$method}(...$args);
-        });
+        return fn (array ...$arrays): array => call_user_func_array('array_diff', $arrays);
     }
 }

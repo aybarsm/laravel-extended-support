@@ -22,17 +22,21 @@ class ExtendedSupportServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/mixin.stub' => base_path('stubs/mixin.stub'),
         ], 'stubs');
 
-        $this->app->singleton('extended-support', function ($app) {
-            return new ExtendedSupport(
+        $providerExtendedSupport = config('extended-support.providers.extended_support', \Aybarsm\Laravel\Support\ExtendedSupport::class);
+
+        $this->app->singleton('extended-support',
+            fn ($app) => new $providerExtendedSupport(
                 config('extended-support.mixins.load', []),
                 config('extended-support.mixins.replace', true),
-            );
-        });
+                config('extended-support.patterns.mixin_bind', '/.*@mixin\s*([^\s*]+)[\s\S]*/'),
+                config('extended-support.runtime.class_autoload', true),
+            )
+        );
     }
 
     public function boot(): void
     {
-        app('extended-support')->loadMixins();
+        app('extended-support')->loadMissing(true);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
