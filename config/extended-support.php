@@ -15,14 +15,10 @@ return [
             ],
         ],
     ],
-    'patterns' => [
-        'mixin_bind' => "/.*@mixin\s*([^\s*]+)[\s\S]*/",
-        'lines' => "/((\r?\n)|(\r\n?))/",
-        'empty_lines' => "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/",
-    ],
     'mixins' => [
         'replace' => true,
         'load' => [
+            Aybarsm\Laravel\Support\Mixins\StringableMixin::class,
             Aybarsm\Laravel\Support\Mixins\StrMixin::class,
             Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
             Aybarsm\Laravel\Support\Mixins\FileMixin::class,

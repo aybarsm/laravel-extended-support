@@ -3,7 +3,6 @@
 namespace Aybarsm\Laravel\Support;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Stringable;
 use Illuminate\Support\Traits\Macroable;
 use ReflectionClass;
 
@@ -11,12 +10,17 @@ class ExtendedSupport
 {
     use Macroable;
 
+    protected string $requiredTrait = 'Illuminate\Support\Traits\Macroable';
+
+    protected string $bindPattern = '/@mixin\s*([^\s*]+)/';
+
+    protected string $bindReplace = '/.*@mixin\s*([^\s*]+)[\s\S]*/';
+
     protected static array $loaded = [];
 
     public function __construct(
         protected array $load,
         protected bool $replace,
-        protected string $bindPattern,
         protected bool $classAutoload,
     ) {
 
@@ -59,6 +63,7 @@ class ExtendedSupport
         $missing = $force ? $this->load : array_diff($this->load, array_keys(static::$loaded));
 
         foreach ($missing as $class) {
+
             if (is_null($bind = $this->resolveBind($class))) {
                 continue;
             }
@@ -74,13 +79,14 @@ class ExtendedSupport
         return $this;
     }
 
+    protected function isValidMixin(string $class): bool
+    {
+        return strlen($class) > 0 && class_exists($class, $this->classAutoload) && ! empty(get_class_methods($class));
+    }
+
     protected function isValidBind(string $class): bool
     {
-        return
-            strlen($class) > 0 &&
-                class_exists($class, $this->classAutoload) &&
-                    Arr::exists(class_uses($class), 'Illuminate\Support\Traits\Macroable' &&
-                        ! empty(get_class_methods($class)));
+        return strlen($class) > 0 && class_exists($class, $this->classAutoload) && Arr::exists(class_uses($class), $this->requiredTrait);
     }
 
     /**
@@ -88,21 +94,13 @@ class ExtendedSupport
      */
     public function resolveBind(string $class): ?string
     {
-        if (! class_exists($class, $this->classAutoload) || ($docComment = (new ReflectionClass($class))?->getDocComment()) === false) {
+        if (! $this->isValidMixin($class) || ($docComment = (new ReflectionClass($class))?->getDocComment()) === false) {
             return null;
         }
 
-        $bind = str($docComment)
-            ->whenNotEmpty(function (Stringable $string) {
-                return $string
-                    ->squish()
-                    ->replaceMatches($this->bindPattern, '$1')
-                    ->squish()
-                    ->start('\\');
-            })
-            ->value();
+        $bind = str($docComment)->match($this->bindPattern);
 
-        return $this->isValidBind($bind) ? $bind : null;
+        return $bind->isEmpty() || ! $this->isValidBind($bind->value()) ? null : $bind->value();
     }
 
     public function getLoadedMixins(): array

@@ -2,9 +2,8 @@
 
 namespace Aybarsm\Laravel\Support\Mixins;
 
+use Aybarsm\Laravel\Support\Enums\StrLinesAction;
 use Illuminate\Process\ProcessResult;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 /** @mixin \Illuminate\Process\Factory */
 class ProcessMixin
@@ -12,15 +11,19 @@ class ProcessMixin
     public static function resultOutput(): \Closure
     {
         return function (ProcessResult $processResult): object {
-            $output = Str::removeEmptyLines($processResult->output());
-            $errorOutput = Str::removeEmptyLines($processResult->errorOutput());
+            $output = str($processResult->output())->lines(StrLinesAction::REMOVE_EMPTY);
+            $errOutput = str($processResult->errorOutput())->lines(StrLinesAction::REMOVE_EMPTY);
 
-            $return = match (true) {
-                $processResult->exitCode() === 0 && empty($output) && ! empty($errorOutput) => ['output' => $errorOutput, 'errorOutput' => $output],
-                default => ['output' => $output, 'errorOutput' => $errorOutput]
+            return match (true) {
+                $processResult->exitCode() === 0 && $output->isEmpty() && $errOutput->isEmpty() => (object) [
+                    'output' => $errOutput->value(),
+                    'errorOutput' => $output->value(),
+                ],
+                default => (object) [
+                    'output' => $output->value(),
+                    'errorOutput' => $errOutput->value(),
+                ]
             };
-
-            return Arr::toObject($return);
         };
     }
 }

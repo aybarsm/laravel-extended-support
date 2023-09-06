@@ -8,17 +8,9 @@ if (! function_exists('senv')) {
     // Safe & base64 decoding env function
     function senv(string $key, mixed $default = null): mixed
     {
-        $rtr = env($key);
+        $val = str(env($key));
 
-        if ($rtr === null || str($rtr)->length() === 0) {
-            return $default;
-        }
-
-        if (str($rtr)->startsWith('base64:')) {
-            return base64_decode(str($rtr)->after('base64:'));
-        }
-
-        return $rtr;
+        return $val->isEmpty() ? $default : ($val->startsWith('base64:') ? $val->after('base64:')->value() : $val->value());
     }
 }
 

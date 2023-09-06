@@ -28,7 +28,6 @@ class ExtendedSupportServiceProvider extends ServiceProvider
             fn ($app) => new $providerExtendedSupport(
                 config('extended-support.mixins.load', []),
                 config('extended-support.mixins.replace', true),
-                config('extended-support.patterns.mixin_bind', '/.*@mixin\s*([^\s*]+)[\s\S]*/'),
                 config('extended-support.runtime.class_autoload', true),
             )
         );
