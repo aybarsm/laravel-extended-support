@@ -18,7 +18,7 @@ class StrMixin
     public static function semVer(): \Closure
     {
         return function (string $ver) {
-            $provider = config('extended-support.providers.supplements.str.semver', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+            $provider = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
 
             return new $provider($ver);
         };
@@ -27,7 +27,7 @@ class StrMixin
     public static function isSemVer(): \Closure
     {
         return function (string $ver): bool {
-            $provider = config('extended-support.providers.supplements.str.semver', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+            $provider = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
 
             return $provider::validate($ver);
         };

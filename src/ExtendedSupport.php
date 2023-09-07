@@ -2,11 +2,12 @@
 
 namespace Aybarsm\Laravel\Support;
 
+use Aybarsm\Laravel\Support\Contracts\ExtendedSupportInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Macroable;
 use ReflectionClass;
 
-class ExtendedSupport
+class ExtendedSupport implements ExtendedSupportInterface
 {
     use Macroable;
 
@@ -79,12 +80,12 @@ class ExtendedSupport
         return $this;
     }
 
-    protected function isValidMixin(string $class): bool
+    public function isValidMixin(string $class): bool
     {
         return strlen($class) > 0 && class_exists($class, $this->classAutoload) && ! empty(get_class_methods($class));
     }
 
-    protected function isValidBind(string $class): bool
+    public function isValidBind(string $class): bool
     {
         return strlen($class) > 0 && class_exists($class, $this->classAutoload) && Arr::exists(class_uses($class), $this->requiredTrait);
     }

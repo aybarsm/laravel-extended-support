@@ -74,3 +74,22 @@ if (! function_exists('process_return')) {
         };
     }
 }
+
+if (! function_exists('array_change_key_case_recursive')) {
+    function array_change_key_case_recursive(array $arr, int $case = CASE_LOWER): array
+    {
+        return array_map(function ($item) use ($case) {
+            return is_array($item) ? array_change_key_case_recursive($item, $case) : $item;
+        }, array_change_key_case($arr, $case));
+    }
+}
+
+if (! function_exists('sconfig')) {
+    // Key case safe config function
+    function sconfig(string $key, mixed $default = null): mixed
+    {
+        $confBase = array_change_key_case_recursive(config()->all());
+
+        return Arr::get($confBase, Str::lower($key), $default);
+    }
+}

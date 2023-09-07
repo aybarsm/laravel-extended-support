@@ -4,14 +4,14 @@ return [
     'runtime' => [
         'class_autoload' => true,
     ],
-    'providers' => [
-        'extended_support' => Aybarsm\Laravel\Support\ExtendedSupport::class,
-        'supplements' => [
-            'str' => [
-                'semver' => Aybarsm\Laravel\Support\Supplements\Str\SemVer::class,
+    'concretes' => [
+        'ExtendedSupport' => Aybarsm\Laravel\Support\ExtendedSupport::class,
+        'Supplements' => [
+            'Str' => [
+                'SemVer' => Aybarsm\Laravel\Support\Supplements\Str\SemVer::class,
             ],
-            'foundation' => [
-                'annotation' => Aybarsm\Laravel\Support\Supplements\Foundation\Annotation::class,
+            'Foundation' => [
+                'Annotation' => Aybarsm\Laravel\Support\Supplements\Foundation\Annotation::class,
             ],
         ],
     ],

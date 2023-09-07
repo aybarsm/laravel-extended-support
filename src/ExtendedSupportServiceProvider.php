@@ -3,6 +3,7 @@
 namespace Aybarsm\Laravel\Support;
 
 use Aybarsm\Laravel\Support\Console\Commands\MakeMixinCommand;
+use Aybarsm\Laravel\Support\Contracts\ExtendedSupportInterface;
 use Illuminate\Support\ServiceProvider;
 
 class ExtendedSupportServiceProvider extends ServiceProvider
@@ -22,15 +23,17 @@ class ExtendedSupportServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/mixin.stub' => base_path('stubs/mixin.stub'),
         ], 'stubs');
 
-        $providerExtendedSupport = config('extended-support.providers.extended_support', \Aybarsm\Laravel\Support\ExtendedSupport::class);
+        $providerExtendedSupport = sconfig('extended-support.concretes.ExtendedSupport', \Aybarsm\Laravel\Support\ExtendedSupport::class);
 
-        $this->app->singleton('extended-support',
+        $this->app->singleton(ExtendedSupportInterface::class,
             fn ($app) => new $providerExtendedSupport(
                 config('extended-support.mixins.load', []),
                 config('extended-support.mixins.replace', true),
                 config('extended-support.runtime.class_autoload', true),
             )
         );
+
+        $this->app->alias(ExtendedSupportInterface::class, 'extended-support');
     }
 
     public function boot(): void
@@ -42,5 +45,12 @@ class ExtendedSupportServiceProvider extends ServiceProvider
                 MakeMixinCommand::class,
             ]);
         }
+    }
+
+    public function provides(): array
+    {
+        return [
+            ExtendedSupportInterface::class, 'extended-support',
+        ];
     }
 }
