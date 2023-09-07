@@ -41,6 +41,14 @@ class SemVer
         $this->patch = $this->getScope();
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public static function make(string $ver): static
+    {
+        return new static($ver);
+    }
+
     public static function get(string $ver): string
     {
         return preg_replace('/.*?(\d+\.\d+\.\d+).*/', '$1', $ver);

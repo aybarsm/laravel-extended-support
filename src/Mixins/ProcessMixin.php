@@ -2,7 +2,6 @@
 
 namespace Aybarsm\Laravel\Support\Mixins;
 
-use Aybarsm\Laravel\Support\Enums\StrLinesAction;
 use Illuminate\Process\ProcessResult;
 
 /** @mixin \Illuminate\Process\Factory */

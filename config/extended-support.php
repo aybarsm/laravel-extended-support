@@ -26,6 +26,7 @@ return [
             Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
             Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
             Aybarsm\Laravel\Support\Mixins\ProcessMixin::class,
+            Aybarsm\Laravel\Support\Mixins\CollectionMixin::class,
         ],
     ],
 ];
