@@ -2,8 +2,6 @@
 
 namespace Aybarsm\Laravel\Support\Traits;
 
-use ReflectionEnum;
-
 trait EnumHelper
 {
     public static function getAllNames(): array
