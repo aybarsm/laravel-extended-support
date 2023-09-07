@@ -11,8 +11,8 @@ class ProcessMixin
     public static function resultOutput(): \Closure
     {
         return function (ProcessResult $processResult): object {
-            $output = str($processResult->output())->lines(StrLinesAction::REMOVE_EMPTY);
-            $errOutput = str($processResult->errorOutput())->lines(StrLinesAction::REMOVE_EMPTY);
+            $output = str($processResult->output())->squish();
+            $errOutput = str($processResult->errorOutput())->squish();
 
             return match (true) {
                 $processResult->exitCode() === 0 && $output->isEmpty() && $errOutput->isEmpty() => (object) [

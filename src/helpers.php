@@ -61,7 +61,7 @@ if (! function_exists('vendor_path')) {
 }
 
 if (! function_exists('process_return')) {
-    function process_return(ProcessResult $processResult, ProcessReturnType $returnType): mixed
+    function process_return(ProcessResult $processResult, ProcessReturnType $returnType): bool|object|string
     {
         return match ($returnType) {
             ProcessReturnType::FAILED => $processResult->failed(),
