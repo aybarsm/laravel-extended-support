@@ -2,7 +2,9 @@
 
 use Aybarsm\Laravel\Support\Enums\ProcessReturnType;
 use Illuminate\Process\ProcessResult;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 if (! function_exists('senv')) {
     // Safe & base64 decoding env function
