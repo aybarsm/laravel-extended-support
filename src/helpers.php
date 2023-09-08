@@ -16,18 +16,18 @@ if (! function_exists('senv')) {
 
 if (! function_exists('ts')) {
     // ISO8601Zulu Timestamp function - Replaceable separators for safe file names
-    function ts(string $timezone = 'UTC', string $separatorDate = '', string $separatorHour = ''): string
+    function ts(string $timezone = 'UTC', string $separatorDate = null, string $separatorHour = null): string
     {
         $ts = now($timezone)->toIso8601ZuluString();
 
         $searchReplace = match (true) {
-            ! empty($separatorDate) && ! empty($separatorHour) => [['-', ':'], [$separatorDate, $separatorHour]],
-            ! empty($separatorDate) => ['-', $separatorDate],
-            ! empty($separatorHour) => [':', $separatorHour],
+            ! is_null($separatorDate) && ! is_null($separatorHour) => [['-', ':'], [$separatorDate, $separatorHour]],
+            ! is_null($separatorDate) => ['-', $separatorDate],
+            ! is_null($separatorHour) => [':', $separatorHour],
             default => []
         };
 
-        return (boolval(count($searchReplace)) ? str($ts)->replace($searchReplace[0], $searchReplace[1]) : $ts)->value();
+        return boolval(count($searchReplace)) ? str($ts)->replace($searchReplace[0], $searchReplace[1])->value() : $ts;
     }
 }
 
