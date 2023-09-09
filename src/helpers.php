@@ -95,3 +95,14 @@ if (! function_exists('sconfig')) {
         return Arr::get($confBase, Str::lower($key), $default);
     }
 }
+
+if (! function_exists('str_case')) {
+    function str_case(string $str, int $case = null): string
+    {
+        return match ($case) {
+            CASE_LOWER => Str::lower($str),
+            CASE_UPPER => Str::upper($str),
+            default => $str
+        };
+    }
+}
