@@ -18,18 +18,18 @@ class StrMixin
     public static function semVer(): \Closure
     {
         return function (string $ver) {
-            $provider = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+            $concrete = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
 
-            return new $provider($ver);
+            return new $concrete($ver);
         };
     }
 
     public static function isSemVer(): \Closure
     {
         return function (string $ver): bool {
-            $provider = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
+            $concrete = sconfig('extended-support.concretes.Supplements.Str.SemVer', \Aybarsm\Laravel\Support\Supplements\Str\SemVer::class);
 
-            return $provider::validate($ver);
+            return $concrete::validate($ver);
         };
     }
 

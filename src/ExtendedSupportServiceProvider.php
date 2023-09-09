@@ -15,42 +15,37 @@ class ExtendedSupportServiceProvider extends ServiceProvider
             'extended-support'
         );
 
-        $this->publishes([
-            __DIR__.'/../config/extended-support.php' => config_path('extended-support.php'),
-        ], 'config');
-
-        $this->publishes([
-            __DIR__.'/../stubs/mixin.stub' => base_path('stubs/mixin.stub'),
-        ], 'stubs');
-
-        $providerExtendedSupport = sconfig('extended-support.concretes.ExtendedSupport', \Aybarsm\Laravel\Support\ExtendedSupport::class);
+        $concrete = sconfig('extended-support.concretes.ExtendedSupport', \Aybarsm\Laravel\Support\ExtendedSupport::class);
 
         $this->app->singleton(ExtendedSupportInterface::class,
-            fn ($app) => new $providerExtendedSupport(
-                config('extended-support.mixins.load', []),
-                config('extended-support.mixins.replace', true),
-                config('extended-support.runtime.class_autoload', true),
+            fn ($app) => new $concrete(
+                sconfig('extended-support.runtime.replace_existing', true),
+                sconfig('extended-support.runtime.class_autoload', true),
+                sconfig('extended-support.runtime.required_trait', 'Illuminate\Support\Traits\Macroable'),
+                sconfig('extended-support.runtime.bind_pattern', '/@mixin\s*([^\s*]+)/'),
+                sconfig('extended-support.runtime.load', []),
             )
         );
 
         $this->app->alias(ExtendedSupportInterface::class, 'extended-support');
     }
 
-    public function boot(): void
+    public function boot(ExtendedSupportInterface $contract): void
     {
-        app('extended-support')->loadMissing(true);
+        $contract->loadMixins();
 
         if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/extended-support.php' => config_path('extended-support.php'),
+            ], 'config');
+
+            $this->publishes([
+                __DIR__.'/../stubs/mixin.stub' => base_path('stubs/mixin.stub'),
+            ], 'stubs');
+
             $this->commands([
                 MakeMixinCommand::class,
             ]);
         }
-    }
-
-    public function provides(): array
-    {
-        return [
-            ExtendedSupportInterface::class, 'extended-support',
-        ];
     }
 }

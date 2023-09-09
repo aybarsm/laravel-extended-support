@@ -11,81 +11,56 @@ class ExtendedSupport implements ExtendedSupportInterface
 {
     use Macroable;
 
-    protected string $requiredTrait = 'Illuminate\Support\Traits\Macroable';
+    protected static bool $init;
 
-    protected string $bindPattern = '/@mixin\s*([^\s*]+)/';
-
-    protected string $bindReplace = '/.*@mixin\s*([^\s*]+)[\s\S]*/';
+    protected static array $failed = [];
 
     protected static array $loaded = [];
 
     public function __construct(
-        protected array $load,
-        protected bool $replace,
-        protected bool $classAutoload,
+        public readonly bool $replaceExisting,
+        public readonly bool $classAutoload,
+        public readonly string $requiredTrait,
+        public readonly string $bindPattern,
+        public readonly array $loadList
     ) {
 
     }
 
-    public function addMixin(string|array $class): static
+    public function loadMixins(): void
     {
-        $add = Arr::where(array_diff(Arr::wrap($class), $this->load), fn ($val, $key) => class_exists($val, $this->classAutoload));
-
-        if (! empty($add)) {
-            $this->load = array_merge($this->load, $add);
+        if (isset(static::$init) || empty($this->loadList)) {
+            return;
         }
+        foreach ($this->loadList as $mixin) {
+            if (is_null($bind = $this->resolveBind($mixin))) {
+                static::$failed[] = $mixin;
 
-        return $this;
-    }
-
-    public function setReplace(bool $replace = true): static
-    {
-        $this->replace = $replace;
-
-        return $this;
-    }
-
-    public function setClassAutoload(bool $autoload = true): static
-    {
-        $this->classAutoload = $autoload;
-
-        return $this;
-    }
-
-    public function setBindPattern(string $pattern): static
-    {
-        $this->bindPattern = $pattern;
-
-        return $this;
-    }
-
-    public function loadMissing(bool $force = false): static
-    {
-        $missing = $force ? $this->load : array_diff($this->load, array_keys(static::$loaded));
-
-        foreach ($missing as $class) {
-
-            if (is_null($bind = $this->resolveBind($class))) {
                 continue;
             }
 
-            $bind::mixin(new $class(), $this->replace);
-
-            self::$loaded[$class] = [
-                'bind' => $bind,
-                'methods' => Arr::where(get_class_methods($class), fn ($val, $key): bool => $bind::hasMacro($val)),
-            ];
+            $this->addMixin($mixin, $bind);
         }
 
-        return $this;
+        static::$init = true;
     }
 
-    public function isValidMixin(string $class): bool
+    protected function addMixin(string $mixin, string $bind): void
+    {
+        $bind::mixin(new $mixin(), $this->replaceExisting);
+
+        static::$loaded[$mixin] = [
+            'bind' => $bind,
+            'methods' => Arr::where(get_class_methods($mixin), fn ($val, $key): bool => $bind::hasMacro($val)),
+        ];
+    }
+
+    protected function isValidMixin(string $class): bool
     {
         return strlen($class) > 0 && class_exists($class, $this->classAutoload) && ! empty(get_class_methods($class));
     }
 
-    public function isValidBind(string $class): bool
+    protected function isValidBind(string $class): bool
     {
         return strlen($class) > 0 && class_exists($class, $this->classAutoload) && Arr::exists(class_uses($class), $this->requiredTrait);
     }
@@ -93,7 +68,7 @@ class ExtendedSupport implements ExtendedSupportInterface
     /**
      * @throws \ReflectionException
      */
-    public function resolveBind(string $class): ?string
+    protected function resolveBind(string $class): ?string
     {
         if (! $this->isValidMixin($class) || ($docComment = (new ReflectionClass($class))?->getDocComment()) === false) {
             return null;
@@ -104,8 +79,13 @@ class ExtendedSupport implements ExtendedSupportInterface
         return $bind->isEmpty() || ! $this->isValidBind($bind->value()) ? null : $bind->value();
     }
 
-    public function getLoadedMixins(): array
+    public static function getLoaded(): array
     {
-        return self::$loaded;
+        return static::$loaded;
+    }
+
+    public static function getFailed(): array
+    {
+        return static::$failed;
     }
 }

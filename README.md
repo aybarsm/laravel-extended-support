@@ -22,7 +22,21 @@ You can remove or add new mixins to the load list and modify concretes by extend
 ```php
 return [
     'runtime' => [
+        'replace_existing' => true,
         'class_autoload' => true,
+        'required_trait' => 'Illuminate\Support\Traits\Macroable',
+        'bind_pattern' => '/@mixin\s*([^\s*]+)/',
+        'load' => [
+            Aybarsm\Laravel\Support\Mixins\StringableMixin::class,
+            Aybarsm\Laravel\Support\Mixins\StrMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
+            Aybarsm\Laravel\Support\Mixins\FileMixin::class,
+            Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
+            Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ProcessMixin::class,
+            Aybarsm\Laravel\Support\Mixins\CollectionMixin::class,
+        ],
     ],
     'concretes' => [
         'ExtendedSupport' => Aybarsm\Laravel\Support\ExtendedSupport::class,
@@ -33,19 +47,6 @@ return [
             'Foundation' => [
                 'Annotation' => Aybarsm\Laravel\Support\Supplements\Foundation\Annotation::class,
             ],
-        ],
-    ],
-    'mixins' => [
-        'replace' => true,
-        'load' => [
-            Aybarsm\Laravel\Support\Mixins\StringableMixin::class,
-            Aybarsm\Laravel\Support\Mixins\StrMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
-            Aybarsm\Laravel\Support\Mixins\FileMixin::class,
-            Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
-            Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ProcessMixin::class,
         ],
     ],
 ];
@@ -87,16 +88,17 @@ class ArrMixin
 ```
 
 ```php
-return [
-    'mixins' => [
-        'replace' => true,
+'runtime' => [
         'load' => [
+            Aybarsm\Laravel\Support\Mixins\StringableMixin::class,
             Aybarsm\Laravel\Support\Mixins\StrMixin::class,
             Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
             Aybarsm\Laravel\Support\Mixins\FileMixin::class,
             Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
             Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
             Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
+            Aybarsm\Laravel\Support\Mixins\ProcessMixin::class,
+            Aybarsm\Laravel\Support\Mixins\CollectionMixin::class,
             App\Mixins\ArrMixin::class,
         ],
     ],
@@ -148,12 +150,19 @@ Str::isSemVer('9.2'); // Output: false
 ```php
 use Aybarsm\Laravel\Support\Traits\EnumHelper;
 
-enum StrTrimSide: int
+enum ProcessReturnType: int
 {
     use EnumHelper;
-
-    case BOTH = 0;
-    case LEFT = 1;
-    case RIGHT = 2;
+    
+    case STATUS = 0;
+    case SUCCESSFUL = 1;
+    case FAILED = 2;
+    case EXIT_CODE = 3;
+    case OUTPUT = 4;
+    case ERROR_OUTPUT = 5;
+    case INSTANCE = 6;
+    case ALL_OUTPUT = 7;
 }
+
+$enum = ProcessReturnType::tryFrom(ProcessReturnType::byName('EXIT_CODE')); //returns designated enum as static
 ```
