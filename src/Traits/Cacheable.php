@@ -8,7 +8,7 @@ trait Cacheable
 {
     protected static object $cacheable;
 
-    public function __construct(bool $enabled, string $key, string $store = null, string $tag = null, int $expires = null, bool $force = false)
+    public function __construct(bool $enabled, string $key, ?string $store = null, ?string $tag = null, ?int $expires = null, bool $force = false)
     {
         if ($force === false && static::$cacheable->init === true) {
             return;

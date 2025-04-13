@@ -34,7 +34,7 @@ trait EnumHelper
         return collect(static::cases())->firstWhere('value', $value)?->name;
     }
 
-    public static function getFirst(mixed $search): static
+    public static function getFirst(mixed $search): ?static
     {
         return collect(static::cases())->filter(fn ($item) => $item->value === $search || $item->name === $search)->first();
     }

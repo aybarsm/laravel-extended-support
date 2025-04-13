@@ -1,13 +1,9 @@
 <?php
 
-use Aybarsm\Laravel\Support\Enums\ProcessReturnType;
-use Illuminate\Process\ProcessResult;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Str;
+use function Illuminate\Filesystem\join_paths;
 
 if (! function_exists('senv')) {
-    // Safe & base64 decoding env function
+    // Safe & base64 decoding .env function
     function senv(string $key, mixed $default = null): mixed
     {
         $val = str(env($key));
@@ -18,7 +14,7 @@ if (! function_exists('senv')) {
 
 if (! function_exists('ts')) {
     // ISO8601Zulu Timestamp function - Replaceable separators for safe file names
-    function ts(string $timezone = 'UTC', string $separatorDate = null, string $separatorHour = null): string
+    function ts(string $timezone = 'UTC', ?string $separatorDate = null, ?string $separatorHour = null): string
     {
         $ts = now($timezone)->toIso8601ZuluString();
 
@@ -33,76 +29,74 @@ if (! function_exists('ts')) {
     }
 }
 
-if (! function_exists('getRequestIP')) {
-    // Get real request IP if behind cloudflare
-    function getRequestIP($request = null): string
+if (! function_exists('resolve_path')) {
+    function resolve_path(string $basePath, ...$args): string
     {
-        $useRequest = $request ?? request();
+        $bp = str($basePath)->trim();
+        $segments = $bp->split(pquote('#%s#', null, DIRECTORY_SEPARATOR), -1, PREG_SPLIT_NO_EMPTY);
 
-        return $useRequest->header('cf-connecting-ip', $useRequest->ip());
-    }
-}
+        if ($segments->isNotEmpty()) {
+            $bp = str($segments->shift());
 
-if (! function_exists('pathDir')) {
-    function pathDir(string $path, bool $trailingSlash = false, bool $safe = true): string
-    {
-        if ($safe && empty($path)) {
-            return $trailingSlash ? DIRECTORY_SEPARATOR : '';
+            foreach (array_reverse($segments->all()) as $segment) {
+                array_unshift($args, $segment);
+            }
+
+            if ($bp->contains('::')) {
+                if ($bp->after('::')->isNotEmpty()) {
+                    $segment = $bp->after('::')->value();
+                    array_unshift($args, $segment);
+                    $bp = $bp->chopEnd($segment);
+                }
+            }
+
+            $bp = $bp->value();
         }
 
-        return DIRECTORY_SEPARATOR.trim($path, DIRECTORY_SEPARATOR).($trailingSlash ? DIRECTORY_SEPARATOR : '');
+        $bp = match (true) {
+            $bp === '~' => $_SERVER['HOME'],
+            $bp === '.' => getcwd(),
+            $bp === 'bp::' => base_path(),
+            $bp === 'sp::' => storage_path(),
+            $bp === 'dp::' => database_path(),
+            $bp === 'rp::' => resource_path(),
+            default => (PHP_OS_FAMILY === 'Windows' ? $bp.DIRECTORY_SEPARATOR : DIRECTORY_SEPARATOR.$bp),
+        };
+
+        return join_paths($bp, ...$args);
     }
 }
 
 if (! function_exists('vendor_path')) {
-    // Safe & base64 decoding env function
-    function vendor_path(string $author = '', string $package = '', string $path = ''): string
+    function vendor_path(...$args): string
     {
-        return base_path('vendor'.pathDir($author).pathDir($package).pathDir($path));
+        return resolve_path(base_path(), 'vendor', ...$args);
     }
 }
 
-if (! function_exists('process_return')) {
-    function process_return(ProcessResult $processResult, ProcessReturnType $returnType): bool|object|string
+if (! function_exists('truthy')) {
+    function truthy(mixed $value): bool
     {
-        return match ($returnType) {
-            ProcessReturnType::FAILED => $processResult->failed(),
-            ProcessReturnType::EXIT_CODE => $processResult->exitCode(),
-            ProcessReturnType::OUTPUT => Process::resultOutput($processResult)->output,
-            ProcessReturnType::ERROR_OUTPUT => Process::resultOutput($processResult)->errorOutput,
-            ProcessReturnType::INSTANCE => $processResult,
-            ProcessReturnType::ALL_OUTPUT => Process::resultOutput($processResult),
-            default => $processResult->successful()
-        };
+        $value = is_string($value) ? strtolower($value) : $value;
+
+        return in_array($value, ['yes', 'on', '1', 1, true, 'true'], true);
     }
 }
 
-if (! function_exists('array_change_key_case_recursive')) {
-    function array_change_key_case_recursive(array $arr, int $case = CASE_LOWER): array
+if (! function_exists('falsy')) {
+    function falsy(mixed $value): bool
     {
-        return array_map(function ($item) use ($case) {
-            return is_array($item) ? array_change_key_case_recursive($item, $case) : $item;
-        }, array_change_key_case($arr, $case));
+        $value = is_string($value) ? strtolower($value) : $value;
+
+        return in_array($value, ['no', 'off', '0', 0, false, 'false'], true);
     }
 }
 
-if (! function_exists('sconfig')) {
-    // Key case safe config function
-    function sconfig(string $key, mixed $default = null): mixed
+if (! function_exists('request_ip')) {
+    function request_ip($request = null): string
     {
-        $confBase = array_change_key_case_recursive(config()->all());
+        $useRequest = $request ?? request();
 
-        return Arr::get($confBase, Str::lower($key), $default);
-    }
-}
-
-if (! function_exists('str_case')) {
-    function str_case(string $str, int $case = null): string
-    {
-        return match ($case) {
-            CASE_LOWER => Str::lower($str),
-            CASE_UPPER => Str::upper($str),
-            default => $str
-        };
+        return $useRequest->header('cf-connecting-ip', $useRequest->ip());
     }
 }

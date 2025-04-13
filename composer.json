@@ -20,12 +20,15 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/contracts": "^10.0",
-        "illuminate/support": "^10.0"
+        "php": "^8.4",
+        "laravel/framework": "^12.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.12"
+        "laravel/pint": "^1.21.2",
+        "pestphp/pest": "^3.7",
+        "pestphp/pest-plugin-arch": "^3.0.0",
+        "phpstan/phpstan": "^1.12.7",
+        "symfony/var-dumper": "^7.2.0"
     },
     "autoload": {
         "psr-4": {
@@ -34,6 +37,11 @@
         "files": [
             "src/helpers.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
     },
     "extra": {
         "laravel": {

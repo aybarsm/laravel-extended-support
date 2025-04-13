@@ -1,32 +1,15 @@
 <?php
 
 return [
-    'runtime' => [
-        'replace_existing' => true,
-        'class_autoload' => true,
-        'required_trait' => 'Illuminate\Support\Traits\Macroable',
-        'bind_pattern' => '/@mixin\s*([^\s*]+)/',
-        'load' => [
-            Aybarsm\Laravel\Support\Mixins\StringableMixin::class,
-            Aybarsm\Laravel\Support\Mixins\StrMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ArrMixin::class,
-            Aybarsm\Laravel\Support\Mixins\FileMixin::class,
-            Aybarsm\Laravel\Support\Mixins\RuleMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class,
-            Aybarsm\Laravel\Support\Mixins\CommandMixin::class,
-            Aybarsm\Laravel\Support\Mixins\ProcessMixin::class,
-            Aybarsm\Laravel\Support\Mixins\CollectionMixin::class,
-        ],
-    ],
-    'concretes' => [
-        'ExtendedSupport' => Aybarsm\Laravel\Support\ExtendedSupport::class,
-        'Supplements' => [
-            'Str' => [
-                'SemVer' => Aybarsm\Laravel\Support\Supplements\Str\SemVer::class,
-            ],
-            'Foundation' => [
-                'Annotation' => Aybarsm\Laravel\Support\Supplements\Foundation\Annotation::class,
-            ],
-        ],
+    'mixins' => [
+        Aybarsm\Laravel\Support\Mixins\StringableMixin::class => Illuminate\Support\Stringable::class,
+        Aybarsm\Laravel\Support\Mixins\StrMixin::class => Illuminate\Support\Str::class,
+        Aybarsm\Laravel\Support\Mixins\ArrMixin::class => Illuminate\Support\Arr::class,
+        Aybarsm\Laravel\Support\Mixins\FileMixin::class => Illuminate\Filesystem\Filesystem::class,
+        Aybarsm\Laravel\Support\Mixins\RuleMixin::class => Illuminate\Validation\Rule::class,
+        Aybarsm\Laravel\Support\Mixins\ApplicationMixin::class => Illuminate\Foundation\Application::class,
+        Aybarsm\Laravel\Support\Mixins\CommandMixin::class => Illuminate\Console\Command::class,
+        Aybarsm\Laravel\Support\Mixins\ProcessMixin::class => Illuminate\Process\Factory::class,
+        Aybarsm\Laravel\Support\Mixins\CollectionMixin::class => Illuminate\Support\Collection::class,
     ],
 ];

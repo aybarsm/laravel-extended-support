@@ -10,7 +10,7 @@ class CollectionMixin
      */
     public static function recursive(): \Closure
     {
-        return function (int $depth = null) {
+        return function (?int $depth = null) {
             // Use the map method to iterate over the items in the collection.
             return $this->map(function ($item) use ($depth) {
                 // If the depth is 0 or the item is not a collection, array, or object, return the item as-is.

@@ -2,90 +2,110 @@
 
 namespace Aybarsm\Laravel\Support;
 
-use Aybarsm\Laravel\Support\Contracts\ExtendedSupportInterface;
-use Illuminate\Support\Arr;
+use Aybarsm\Laravel\Support\Contracts\ExtendedSupportContract;
+use Aybarsm\Laravel\Support\Exceptions\ExtendedSupportException;
+use Illuminate\Container\Attributes\Config;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use ReflectionClass;
 
-class ExtendedSupport implements ExtendedSupportInterface
+final class ExtendedSupport implements ExtendedSupportContract
 {
-    use Macroable;
-
-    protected static bool $init;
-
-    protected static array $failed = [];
-
-    protected static array $loaded = [];
+    use Conditionable, Macroable;
 
     public function __construct(
-        public readonly bool $replaceExisting,
-        public readonly bool $classAutoload,
-        public readonly string $requiredTrait,
-        public readonly string $bindPattern,
-        public readonly array $loadList
+        #[Config('extended-support', [])] public readonly array $config
     ) {
+        Event::listen('extended-support.booting', fn () => self::resolve());
+    }
+
+    protected function resolve(): void
+    {
 
     }
 
-    public function loadMixins(): void
+    protected function registerMixins(array $mixins): void
     {
-        if (isset(static::$init) || empty($this->loadList)) {
-            return;
-        }
-        foreach ($this->loadList as $mixin) {
-            if (is_null($bind = $this->resolveBind($mixin))) {
-                static::$failed[] = $mixin;
-
+        foreach ($mixins as $mixin => $bind) {
+            if (! class_exists($mixin) || ! class_exists($bind) || ! method_exists($bind, 'mixin')) {
                 continue;
             }
 
-            $this->addMixin($mixin, $bind);
+            $bind::mixin($mixin);
+        }
+    }
+
+    public static function isMethodCallable(string $method, object|string $instance, ?\ReflectionClass $ref = null): true|string
+    {
+        $class = is_object($instance) ? get_class($instance) : $instance;
+
+        if (blank($method)) {
+            return "Method not provided for `{$class}`.";
         }
 
-        static::$init = true;
-    }
+        $ref = $ref ?? new \ReflectionClass($class);
 
-    protected function addMixin(string $mixin, string $bind): void
-    {
-        $bind::mixin(new $mixin(), $this->replaceExisting);
-
-        static::$loaded[$mixin] = [
-            'bind' => $bind,
-            'methods' => Arr::where(get_class_methods($mixin), fn ($val, $key): bool => $bind::hasMacro($val)),
-        ];
-    }
-
-    protected function isValidMixin(string $class): bool
-    {
-        return strlen($class) > 0 && class_exists($class, $this->classAutoload) && ! empty(get_class_methods($class));
-    }
-
-    protected function isValidBind(string $class): bool
-    {
-        return strlen($class) > 0 && class_exists($class, $this->classAutoload) && Arr::exists(class_uses($class), $this->requiredTrait);
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    protected function resolveBind(string $class): ?string
-    {
-        if (! $this->isValidMixin($class) || ($docComment = (new ReflectionClass($class))?->getDocComment()) === false) {
-            return null;
+        if (! $ref->hasMethod($method)) {
+            return "Method `{$method}` does not exist in `{$class}` instance.";
         }
 
-        $bind = str($docComment)->match($this->bindPattern);
+        if (! $ref->getMethod($method)->isPublic()) {
+            return "Method `{$method}` is not public in `{$class}` instance.";
+        }
 
-        return $bind->isEmpty() || ! $this->isValidBind($bind->value()) ? null : $bind->value();
+        return true;
     }
 
-    public static function getLoaded(): array
+    public static function with(string|callable $callback, mixed $value, bool $parameters = false, bool $first = false): mixed
     {
-        return static::$loaded;
-    }
+        $useParams = $parameters && is_array($value);
 
-    public static function getFailed(): array
-    {
-        return static::$failed;
+        if (is_callable($callback)) {
+            return $useParams ? $callback(...$value) : $callback($value);
+        }
+
+        $val = $first && $useParams ? $value[array_key_first($value)] : $value;
+
+        $segments = preg_split('#@#', $callback, 2, PREG_SPLIT_NO_EMPTY);
+        $class = $segments[0];
+
+        throw_if(
+            ! class_exists($class),
+            ExtendedSupportException::class,
+            "Class `{$class}` does not exist."
+        );
+
+        $method = $segments[1] ?? '__invoke';
+        $ref = new ReflectionClass($class);
+        $instance = app()->has($class) ? app()->get($class) : null;
+
+        if ($instance !== null && self::isMethodCallable($method, $instance, $ref) === true) {
+            if ($ref->getMethod($method)->isStatic()) {
+                return $useParams ? $instance::{$method}(...$value) : $instance::{$method}($value);
+            } else {
+                return $useParams ? $instance->{$method}(...$value) : $instance->{$method}($value);
+            }
+        }
+
+        throw_if(
+            ! $ref->isInstantiable(),
+            ExtendedSupportException::class,
+            "Class `{$class}` is not instantiable."
+        );
+
+        throw_if(
+            ($errMsg = self::isMethodCallable($method, $class, $ref)) !== true,
+            ExtendedSupportException::class,
+            $errMsg
+        );
+
+        if ($ref->getMethod($method)->isStatic()) {
+            return $useParams ? $class::{$method}(...$value) : $callback::{$method}($value);
+        }
+
+        $instance = app()->makeWith($class, ($useParams ? $value : []));
+
+        return $useParams ? $instance->{$method}(...$value) : $instance->{$method}($value);
     }
 }
